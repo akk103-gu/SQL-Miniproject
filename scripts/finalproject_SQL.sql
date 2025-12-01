@@ -1,14 +1,16 @@
 #1 
-select Reporting_Airline as "Airline name", max(DepDelay) as "Max delay"
-from al_perf
+select L_AIRLINE_ID.Name as "Airline name", max(DepDelay) as "Max delay"
+from al_perf left join L_AIRLINE_ID on al_perf.DOT_ID_Reporting_Airline = L_AIRLINE_ID.ID
 group by Reporting_Airline
-order by "Max delay" desc;
+order by "Max delay" asc;
+# -- 15 rows returned
 
 #2
-select Reporting_Airline as "Airline name", min(DepDelay) as "Max early departure"
-from al_perf
+select L_AIRLINE_ID.Name as "Airline name", min(DepDelay) as "Max early departure"
+from al_perf left join L_AIRLINE_ID on al_perf.DOT_ID_Reporting_Airline = L_AIRLINE_ID.ID
 group by Reporting_Airline
-order by "Max early departure" desc;
+order by "Max early departure" asc;
+# -- 15 rows returned
 
 #3 
 with flights_day (Day, Flights) as (
@@ -19,9 +21,7 @@ select flights_day.Day, flights_day.Flights, L_WEEKDAYS.Day, rank() over (order 
 from flights_day left join L_WEEKDAYS on flights_day.Day = L_WEEKDAYS.Code 
 group by flights_day.Day
 order by flights_day.Flights asc;
-
-select *
-from al_perf;
+# -- 7 rows returned
 
 #4 
 with MaxAvgDeptDelay (Name, Code, Delay) as (
@@ -31,6 +31,7 @@ group by L_AIRPORT_ID.Name, OriginAirportID)
 select *
 from MaxAvgDeptDelay
 where Delay = (select max(Delay) from MaxAvgDeptDelay);
+# -- 1 row returned
 
 #5
 With MaxDelays as (
@@ -51,11 +52,13 @@ select max(AirportAvgDelay)
     from MaxDelays as MD
     where MD.DOT_ID_Reporting_Airline = MaxDelays.DOT_ID_Reporting_Airline
 );
+# -- 15 rows returned
 
 #6a
 select count(*)
 from al_perf
 where Cancelled = 1;
+# - 1 row returned
 
 #6b
 with CancelCounts as (
@@ -71,8 +74,10 @@ where ReasonCounts = (
 select max(ReasonCounts)
 from CancelCounts as CC
 where CancelCounts.OriginAirportID = CC.OriginAirportID);
+# -- 299 rows returned
 
 #7
 select FlightDate as "Flight date", avg(count(*)) over (order by FlightDate rows between 3 preceding and 1 preceding) as "Average number of flights over past 3 days" 
 from al_perf
 group by FlightDate;
+# -- 31 rows returned
